@@ -1,0 +1,54 @@
+name: CI
+
+# Fast, dependency-light checks that run on any GitHub-hosted runner — no
+# proprietary Silicon Labs toolchain required. The actual firmware build needs
+# the SLT-installed SDK/slc/gcc, so it lives in firmware.yml (self-hosted).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Shellcheck the build/flash/env scripts (errors only)
+        # --severity=error keeps CI green on pre-existing style/warning noise
+        # (e.g. SC2155) while still failing on genuine shell bugs.
+        run: shellcheck --severity=error tools/*.sh
+
+      - name: Parse-check the manifest (.slcp = YAML) and data model (.zap = JSON)
+        run: |
+          python3 -m pip install --quiet pyyaml
+          python3 - <<'PY'
+          import glob, json, yaml
+          yaml.safe_load(open('mgm210l_zigbee_temp.slcp'))
+          for z in glob.glob('config/zcl/*.zap'):
+              json.load(open(z))
+          print("slcp (YAML) + zap (JSON) parse OK")
+          PY
+
+      - name: Syntax-check the Zigbee2MQTT converter
+        run: node --check integration/zigbee2mqtt/dormouse.js
+
+      - name: Device-identity consistency (firmware <-> ZAP <-> converter)
+        run: python3 tools/check_consistency.py
+
+      - name: Verify README images exist
+        run: |
+          missing=0
+          for img in $(grep -oE 'docs/img/[A-Za-z0-9_]+\.(png|jpg|svg)' README.md | sort -u); do
+            if [ -f "$img" ]; then echo "  ok   $img"; else echo "  MISS $img"; missing=1; fi
+          done
+          exit $missing

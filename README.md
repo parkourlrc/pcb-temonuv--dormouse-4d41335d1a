@@ -8,6 +8,7 @@
 
 <img src="docs/img/pcb_iso.png" alt="3D render of the assembled Dormouse sensor board" width="620">
 
+[![CI](https://github.com/temonuv/dormouse/actions/workflows/ci.yml/badge.svg)](https://github.com/temonuv/dormouse/actions/workflows/ci.yml)
 [![Platform](https://img.shields.io/badge/MCU-EFR32MG21%20(MGM210L)-2f6db3)](https://www.silabs.com/wireless/zigbee)
 [![Zigbee](https://img.shields.io/badge/Zigbee-3.0-e8362a)](https://csa-iot.org/all-solutions/zigbee/)
 [![SDK](https://img.shields.io/badge/Simplicity%20SDK-2026.6.0-0d7d3f)](https://github.com/SiliconLabs/simplicity_sdk)
@@ -164,6 +165,7 @@ and power the sensor. Verified working with SDK 2026.6.0, slc-cli 6.0.22, GCC 14
 - [x] Manufacturing package generated (Gerbers / drill / BOM / pick-and-place)
 - [x] **PCBs ordered** 🎉
 - [x] Zigbee2MQTT converter + ZHA zero-config path
+- [x] GitHub Actions CI — repo + device-identity checks on every push (`ci.yml`); firmware `.s37` build & release via a self-hosted runner (`firmware.yml`)
 
 ### 🔜 Next (hardware bring-up)
 - [ ] Assemble the boards (reflow / hand-solder), first power-on
@@ -178,7 +180,6 @@ and power the sensor. Verified working with SDK 2026.6.0, slc-cli 6.0.22, GCC 14
 - [ ] 3D model for the custom MGM210L footprint (nicer renders + mechanical check)
 - [ ] 3D-printed enclosure / vented case for the SHT40
 - [ ] Production build profile (drop `segger_rtt` / `iostream_rtt` to shave idle current)
-- [ ] GitHub Actions CI: `slc generate` + build on every push, attach `.s37` to releases
 - [ ] Si7021 sensor variant (swap command byte + conversion only)
 - [ ] Zigbee OTA firmware update support
 - [ ] Nudge the one SDA trace to clear the cosmetic 0.05 mm edge-clearance DRC note

@@ -1,0 +1,66 @@
+name: Firmware build & release
+
+# Builds the actual .s37 with the real toolchain and (optionally) publishes a
+# GitHub Release with it attached.
+#
+# WHY SELF-HOSTED: the build needs the Silicon Labs SLT toolchain (SDK 2026.6.0 +
+# slc + zap + Silabs GCC), which is not installable on a GitHub-hosted runner.
+# Register the machine that already has SLT (the one where `tools/build.sh` works)
+# as a self-hosted runner:
+#
+#   Repo -> Settings -> Actions -> Runners -> New self-hosted runner  (Linux)
+#
+# It must have SLT at $HOME/slt-cli/slt (or set SLT_BIN) and the SDK installed
+# via `slt install -f tools/pkg.slt`. This workflow is manual (workflow_dispatch)
+# so it only runs when you trigger it and your runner is online — no queued jobs
+# on ordinary pushes.
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Optional: create a GitHub Release with this tag (e.g. v0.1.0) and attach the .s37"
+        required: false
+        default: ""
+
+permissions:
+  contents: write   # needed to create releases
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build firmware (slc generate + make)
+        run: |
+          source tools/env.sh
+          tools/build.sh clean
+          tools/build.sh
+
+      - name: Stage the artifact as dormouse.s37
+        id: stage
+        run: |
+          src="build/build/debug/mgm210l_zigbee_temp.s37"
+          test -f "$src"
+          tag="${{ github.event.inputs.release_tag }}"
+          out="dormouse${tag:+-$tag}.s37"
+          cp "$src" "$out"
+          echo "path=$out" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dormouse-firmware
+          path: ${{ steps.stage.outputs.path }}
+          if-no-files-found: error
+
+      - name: Publish release (only when release_tag is set)
+        if: ${{ github.event.inputs.release_tag != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.event.inputs.release_tag }}" \
+            "${{ steps.stage.outputs.path }}" \
+            --title "Dormouse ${{ github.event.inputs.release_tag }}" \
+            --notes "Firmware ${{ github.event.inputs.release_tag }} — flash with \`tools/flash.sh\` or Simplicity Commander."
