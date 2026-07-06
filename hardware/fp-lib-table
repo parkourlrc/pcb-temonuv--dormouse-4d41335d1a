@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "mgm")(type "KiCad")(uri "${KIPRJMOD}/mgm.pretty")(options "")(descr "MGM210L custom module land pattern (gen_mgm_footprint.py)"))
+)

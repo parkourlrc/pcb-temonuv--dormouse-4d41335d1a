@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+  Manufacturer-specific "MGM Debug" cluster for the MGM210L temperature sensor.
+  Loaded into the ZAP data model via a zcl-xml-standalone package reference in
+  config/zcl/mgm210l_zigbee_temp.zap. Cluster id + manufacturer code + attribute
+  ids MUST match the #defines in src/app.h and the Zigbee2MQTT converter.
+
+  Cluster id is in the manufacturer-specific range (0xFC00-0xFFFF) and every
+  attribute inherits the cluster's manufacturerCode (0x1002).
+-->
+<configurator>
+  <domain name="MGM"/>
+  <cluster manufacturerCode="0x1002">
+    <name>MGM Debug</name>
+    <domain>MGM</domain>
+    <description>Runtime debug control + telemetry for the MGM210L sensor:
+      toggle 10 s sampling and surface a live debug line in Home Assistant.</description>
+    <code>0xFC10</code>
+    <define>MGM_DEBUG_CLUSTER</define>
+    <client init="false" tick="false">false</client>
+    <server init="false" tick="false">true</server>
+    <attribute side="server" code="0x0000" define="MGM_DEBUG_ENABLED" type="BOOLEAN" writable="true" default="0x00" optional="true">debug mode on/off (10 s sampling)</attribute>
+    <attribute side="server" code="0x0001" define="MGM_DEBUG_TEXT" type="CHAR_STRING" length="32" writable="false" reportable="true" default="" optional="true">last firmware debug line</attribute>
+    <attribute side="server" code="0x0002" define="MGM_DEBUG_STATUS" type="INT8U" min="0x00" max="0xFF" writable="false" reportable="true" default="0x00" optional="true">last read status (0=OK,1=I2C,2=CRC)</attribute>
+    <attribute side="server" code="0x0003" define="MGM_SAMPLE_INTERVAL_S" type="INT16U" min="0x0001" max="0xFFFF" writable="true" default="0x012C" optional="true">normal (non-debug) sample interval, seconds</attribute>
+  </cluster>
+</configurator>

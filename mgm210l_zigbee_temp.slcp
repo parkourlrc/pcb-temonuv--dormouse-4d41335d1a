@@ -1,0 +1,105 @@
+# Silicon Labs Configurator project (SLCP) — source of truth for the build.
+# `slc generate` reads this file, pulls the listed components from the SDK,
+# runs the ZAP tool over config/zcl to emit the ZCL data model, and produces a
+# Makefile/CMake project under ./build. Edit THIS file (not generated output)
+# to add components, then regenerate. See CLAUDE.md > Build & flash.
+
+project_name: mgm210l_zigbee_temp
+label: Dormouse — Zigbee Temperature & Humidity Sensor (sleepy end device)
+description: >
+  Dormouse: a battery (CR2032) Zigbee 3.0 temperature + humidity sensor for the
+  Silicon Labs MGM210LA22JNF2 module (EFR32MG21). Wakes every 5 min, reads an
+  external SHT4x/Si7021 I2C sensor, reports Temperature Measurement + Relative
+  Humidity + Power Config over Zigbee, then returns to EM2 sleep. Joins Home
+  Assistant via ZHA / Zigbee2MQTT.
+
+package: Zigbee
+category: Zigbee Application
+quality: experimental
+
+# The target part is NOT set here — it is passed to `slc generate` on the CLI
+# via `--with MGM210LA22JNF2` (see tools/build.sh). slc resolves that OPN to the
+# EFR32MG21 die + the module's flash/RF part data.
+
+sdk:
+  # Simplicity SDK 2026.6.0 is the June LTS (newest + production baseline).
+  # Installed via SLT — see tools/pkg.slt and CLAUDE.md > Build & flash.
+  id: silabs.simplicity_sdk
+  version: "2026.6.0"
+
+toolchain_settings:
+  - option: optimize
+    value: size            # -Os: flash + power both benefit
+
+component:
+  # --- Zigbee stack: leaf (end-device-only) build is smaller & lower power ---
+  - id: zigbee_pro_leaf_stack
+  - id: zigbee_source_route
+  - id: zigbee_end_device_support
+  - id: zigbee_network_steering          # commissioning: join an open network
+  - id: zigbee_update_tc_link_key
+  - id: zigbee_scan_dispatch
+  - id: zigbee_counters
+
+  # --- ZCL application framework + the clusters this device exposes ---
+  - id: zigbee_zcl_framework_core
+  - id: zigbee_basic                      # 0x0000 Basic  (mfr/model strings)
+  - id: zigbee_identify                   # 0x0003 Identify
+  - id: zigbee_reporting                  # attribute reporting engine
+  - id: zigbee_find_and_bind_target
+
+  # --- Platform / power ---
+  - id: sl_main                           # provides main() init + super-loop
+  - id: device_init
+  - id: clock_manager                     # bus-clock enable for the IADC
+  - id: power_manager                     # EM2/EM4 sleep management
+  - id: sleeptimer
+  - id: nvm3_default                      # persists the power-cycle-reset counter
+  - id: i2cspm                            # I2C Simple Poll Master (sensor bus)
+    instance: [sensor]
+  - id: emlib_iadc                        # battery voltage measurement (IADC)
+
+  # --- Debug (RTT logging; pull for production to save power) ---
+  - id: segger_rtt
+  - id: iostream_rtt
+
+source:
+  - path: src/app.c
+  - path: src/temp_sensor.c
+  - path: src/debug.c
+  - path: src/factory_reset.c
+
+include:
+  - path: src
+
+# ZCL endpoints/clusters are defined by the ZAP file, NOT here. Open it with
+# `zap config/zcl/mgm210l_zigbee_temp.zap` (or Simplicity Studio). Expected model:
+#   Endpoint 1, profile Home Automation (0x0104), device Temperature Sensor (0x0302)
+#   Server clusters: Basic(0x0000), Power Config(0x0001), Identify(0x0003),
+#                    Temperature Measurement(0x0402), Relative Humidity
+#                    Measurement(0x0405), and the MGM Debug cluster (0xFC10).
+config_file:
+  - path: config/zcl/mgm210l_zigbee_temp.zap
+    directory: zcl
+
+configuration:
+  # Primary network: sleepy end device on a Zigbee 3.0 secured network. The leaf
+  # stack requires an (sleepy) end-device primary type — this is what selects it.
+  - name: SLI_ZIGBEE_PRIMARY_NETWORK_DEVICE_TYPE
+    value: SLI_ZIGBEE_NETWORK_DEVICE_TYPE_SLEEPY_END_DEVICE
+  - name: SLI_ZIGBEE_PRIMARY_NETWORK_SECURITY_TYPE
+    value: SLI_ZIGBEE_NETWORK_SECURITY_TYPE_3_0
+  # Sleepy end device: sleeps in EM2 between parent polls.
+  - name: SL_ZIGBEE_AF_PLUGIN_END_DEVICE_SUPPORT_END_DEVICE_POLL_TIMEOUT
+    value: MINUTES_256
+  - name: EMBER_END_DEVICE_POLL_TIMEOUT
+    value: MINUTES_256
+  # Long poll interval — how often we poll the parent for queued data.
+  - name: SL_ZIGBEE_AF_PLUGIN_END_DEVICE_SUPPORT_LONG_POLL_INTERVAL_SECONDS
+    value: 300
+  - name: SL_ZIGBEE_AF_PLUGIN_END_DEVICE_SUPPORT_SHORT_POLL_INTERVAL_SECONDS
+    value: 1
+  # Keep the radio TX power modest — a CR2032 cannot source the current pulse
+  # of the +20 dBm PA. 0–8 dBm + good decoupling is the safe envelope.
+  - name: SL_ZIGBEE_AF_PLUGIN_NETWORK_STEERING_RADIO_TX_POWER
+    value: 8

@@ -1,0 +1,22 @@
+# SLT (Silicon Labs Tool) install recipe — reproducible toolchain for this repo.
+#
+# Installs the newest Simplicity SDK (2026.6.0 LTS) + the full command-line
+# toolchain into ~/.silabs/slt/installs/. Regenerate the environment with:
+#
+#     slt install -f tools/pkg.slt
+#
+# "~" pins to the latest available version of each package. Replace with an
+# explicit version (e.g. simplicity-sdk = "2026.6.0") to freeze the toolchain.
+
+version = "0"
+
+[dependency]
+simplicity-sdk   = "~"   # Series 2 SDK incl. Zigbee (EmberZNet) stack + MG21 support
+slc-cli          = "~"   # project generator (reads .slcp, runs ZAP)
+zap              = "~"   # ZCL cluster configurator
+commander        = "~"   # Simplicity Commander (flash + RTT)
+gcc-arm-none-eabi = "~"  # qualified ARM toolchain (GNU 12.2.Rel1)
+ninja            = "~"
+cmake            = "~"
+exx32            = "~"   # EFR32 (Series 2) device support pack
+sdm              = "~"   # secure device manager / provisioning support

@@ -1,0 +1,8 @@
+"Refs","Value","Footprint","Qty","DNP"
+"BT1","CR2032","Battery:BatteryHolder_Renata_SMTU2032-LF_1x2032","1",""
+"C1","10uF","Capacitor_SMD:C_0805_2012Metric","1",""
+"C2,C3","100nF","Capacitor_SMD:C_0402_1005Metric","2",""
+"J1","SWD hdr","Connector_PinHeader_1.27mm:PinHeader_1x05_P1.27mm_Vertical","1",""
+"R1,R2","4.7k","Resistor_SMD:R_0402_1005Metric","2",""
+"U1","MGM210LA22JNF","mgm:MGM210LA22JNF","1",""
+"U2","SHT40","Sensor_Humidity:Sensirion_DFN-4_1.5x1.5mm_P0.8mm_SHT4x_NoCentralPad","1",""

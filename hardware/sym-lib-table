@@ -1,0 +1,5 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "Device")(type "KiCad")(uri "/usr/share/kicad/symbols/Device.kicad_sym")(options "")(descr "KiCad standard Device library"))
+	(lib (name "mgm")(type "KiCad")(uri "${KIPRJMOD}/mgm.kicad_sym")(options "")(descr "MGM210L custom symbols (gen_sch.py)"))
+)

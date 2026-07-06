@@ -1,0 +1,31 @@
+version = "0"
+
+[dependency]
+  python = [{version = "3.10.3", installer = "archive", type = "tools"}]
+  java21 = [{version = "21.0.6", installer = "archive", type = "tools"}]
+  zap = [{version = "2026.06.17", installer = "archive", type = "apack"}]
+  commander = [{version = "1.24.1", installer = "archive", type = "apack"}]
+  exx32 = [{version = "6.0.32", installer = "archive", type = "apack"}]
+  sdm-cli = [{version = "0.102.4", installer = "archive", type = "apack"}]
+  sdm-service = [{version = "0.102.4", installer = "archive", type = "apack"}]
+  sdm-ui = [{version = "0.102.4", installer = "archive", type = "software"}]
+  sdm-meta = [{version = "0.102.4", installer = "archive", type = "software"}]
+  sdm-mcp = [{version = "0.102.4", installer = "archive", type = "software"}]
+  sdm-shrike = [{version = "0.102.4", installer = "archive", type = "software"}]
+  segger-driver = [{version = "2.70.8", installer = "archive", type = "software"}]
+  slc-cli = [{version = "6.0.22", installer = "archive", type = "tools"}]
+  sdm = [{version = "0.102.4", installer = "archive", type = "software"}]
+  cmake = [{version = "3.30.2", installer = "conan", type = "apack", ref = "cmake/3.30.2@silabs#8798657aa78b2da38a3ae465f2d10090"}]
+  gcc-arm-none-eabi = [{version = "14.2.rel1", installer = "conan", type = "toolchain", ref = "gcc-arm-none-eabi/14.2.rel1@silabs#7a5e7220af325e610937338dde99651b"}]
+  llvm-arm-toolchain-for-embedded = [{version = "21.1.1", installer = "conan", type = "toolchain", ref = "llvm-arm-toolchain-for-embedded/21.1.1@silabs#877f3e0faf9658c618b4c2fe80bbb9fa"}]
+  ninja = [{version = "1.12.1", installer = "conan", type = "apack", ref = "ninja/1.12.1@silabs#9ce59e07a142d4da1c532b49742fe16d"}]
+  simplicity-sdk = [{version = "2026.6.0", installer = "conan", type = "sdk", ref = "simplicity-sdk/2026.6.0@silabs#d82063f9e47c75ac02812efeee2ac4e2"}]
+
+[engine]
+  conan-repos = [
+    "https://conan.silabs.net",
+  ]
+
+[settings]
+  dependency-check = "true"
+
