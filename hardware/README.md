@@ -12,8 +12,10 @@ KiCad project risks breaking internal references for no functional gain.)
 | `mgm210l_sensor.kicad_pcb` | PCB — placement + antenna keepout + GND pours + full routing. |
 | `mgm210l_sensor.pdf` | Rendered schematic (quick view, no KiCad needed). |
 | `mgm210l_sensor_2d_view.png` | Rendered PCB (top view). |
+| `mgm210l_sensor_enclosure_drawing.pdf` | Dimensioned mechanical drawing for 3D-printed enclosure design (outline, placement, Z stack-up). |
 | `gen_sch.py` | Generator — schematic + `mgm.kicad_sym` are produced from this. |
 | `gen_mgm_footprint.py` | Generator — the custom MGM210L land pattern. |
+| `gen_enclosure_drawing.py` | Generator — the enclosure drawing PDF (parses the PCB directly). |
 | `mgm.kicad_sym` | Custom symbol library (MGM210L, SHT40, SWD). |
 | `mgm.pretty/` | Custom footprint library (MGM210LA22JNF land pattern). |
 | `sym-lib-table` / `fp-lib-table` | Project library tables (register `Device`/`mgm`). |
@@ -28,6 +30,7 @@ KiCad project risks breaking internal references for no functional gain.)
 cd hardware
 python3 gen_sch.py            # -> .kicad_sch, .kicad_pro, mgm.kicad_sym
 python3 gen_mgm_footprint.py  # -> mgm.pretty/MGM210LA22JNF.kicad_mod
+python3 gen_enclosure_drawing.py  # -> mgm210l_sensor_enclosure_drawing.pdf (from the PCB)
 kicad-cli sch export pdf     -o mgm210l_sensor.pdf mgm210l_sensor.kicad_sch
 kicad-cli sch export netlist -o mgm210l_sensor.net mgm210l_sensor.kicad_sch
 kicad-cli sch erc  mgm210l_sensor.kicad_sch     # 0 violations
@@ -76,10 +79,14 @@ integrated-antenna keepout and the bottom-layer VDD test-point keepout at
 (2.65, 6.45). Verify against the datasheet before ordering.
 
 ## PCB status (routed)
-- **Board:** 36 × 40 mm, rounded corners, 2-layer.
+- **Board:** 36.0 × 25.05 mm, 2 mm corner radius, 1.6 mm FR4, 2-layer.
 - **Placement:** MGM210L (U1) at the top edge with its antenna toward the board
-  edge; CR2032 holder (BT1) on the **back** (B.Cu); SHT40 (U2) near the bottom
-  edge for airflow; decoupling by U1's power pads; I²C pull-ups on the bus.
+  edge — the antenna end of the module **overhangs the top board edge by ~2.6 mm**
+  (deliberate, for antenna clearance); CR2032 holder (BT1) on the **back** (B.Cu);
+  SHT40 (U2) near the bottom edge for airflow; decoupling by U1's power pads;
+  I²C pull-ups on the bus.
+- **Ventilation:** a through slot (~7.2 × 0.7 mm) is milled in the board directly
+  at the SHT40 (U2) for faster RH response.
 - **Antenna keepout:** the GND pours on both layers stop 8 mm short of the top
   edge, keeping copper/ground clear of the integrated antenna (datasheet §7).
 - **Ground pours:** F.Cu + B.Cu, net GND.
@@ -98,8 +105,8 @@ integrated-antenna keepout and the bottom-layer VDD test-point keepout at
    clears the 7 GND ratsnest items.
 2. **Update Footprints from Library** (U1) — clears the 3 cosmetic warnings by
    pulling the corrected `mgm:MGM210LA22JNF`.
-3. Optional: a small cutout/slot around U2 for faster RH response; review trace
-   widths vs. peak TX current; re-run DRC.
+3. Optional: review trace widths vs. peak TX current; re-run DRC. (The RH vent
+   slot at U2 is already cut into the board — see "Ventilation" above.)
 
 ## Library note
 `fp-lib-table` / `sym-lib-table` register the project-local `mgm` libraries via
